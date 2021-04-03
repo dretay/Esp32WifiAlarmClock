@@ -1,3 +1,6 @@
 [submodule "lib/ugfx-arduino-gdisp-uc1698"]
 	path = lib/ugfx-arduino-gdisp-uc1698
 	url = https://github.com/dretay/UC1698.git
+[submodule "lib/ugfx/ugfx"]
+	path = lib/ugfx/ugfx
+	url = https://git.ugfx.io/uGFX/uGFX.git

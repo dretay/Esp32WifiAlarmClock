@@ -8,7 +8,7 @@
 		"url": "https://git.ugfx.io/uGFX/uGFX.git"
 	},
 	"build": {
-		"srcDir" : "",
+		"srcDir" : "ugfx",
         "srcFilter": [
 			"+<gfx.h>",
 			"+<src/gfx_mk.c>",
