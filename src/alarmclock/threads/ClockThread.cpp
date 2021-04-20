@@ -125,7 +125,8 @@ static void run(void* params) {
   while (1) {
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    gdispGSetOrientation(gdispGetDisplay(0), GDISP_ROTATE_270);
+    gdispGSetBacklight(gdispGetDisplay(0), 100);
+	gdispGSetOrientation(gdispGetDisplay(0), GDISP_ROTATE_270);
     gdispClear(Black);
 
     coord_t width = gdispGetWidth();

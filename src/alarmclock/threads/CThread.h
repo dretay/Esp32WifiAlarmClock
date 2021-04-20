@@ -33,7 +33,7 @@ static CThread* CThread_super(CThread* child, uint32_t stack_allotment, char* ta
   child->stack_allotment = stack_allotment;
   strncpy(child->taskName, taskName,configMAX_TASK_NAME_LEN);
 
-  Serial.printf_P(PSTR("Starting %s..."), taskName);
+  Serial.printf_P(PSTR("Starting %s...\n"), taskName);
   xTaskCreate(child->run, taskName, stack_allotment, NULL, priority, &child->thread);
 
   return child;
