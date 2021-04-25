@@ -1,3 +1,12 @@
+export interface AlarmSettings {
+  entries: Array<{
+    song: number,
+    time: number,
+    daysOfWeek: string,
+    enabled: boolean,
+  }>
+}
+
 export interface LightState {
   led_on: boolean;
 }
