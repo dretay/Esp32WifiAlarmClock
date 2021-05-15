@@ -6,7 +6,10 @@
 	],
 	"settings": {
 		"files.associations": {
-			"gdisp_driver.h": "c"
-		}
+			"gdisp_driver.h": "c",
+			"string": "cpp",
+			"functional": "cpp"
+		},
+		"workbench.colorTheme": "Default Light+"
 	}
 }
