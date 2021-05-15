@@ -1,5 +1,7 @@
 #include "AlarmService.h"
 
+extern ESP8266React esp8266React;
+
 AlarmService::AlarmService(AsyncWebServer* server, FS* fs, SecurityManager* securityManager) :
     _httpEndpoint(AlarmSettings::read,
                   AlarmSettings::update,
@@ -17,7 +19,7 @@ extern QueueHandle_t MP3_QUEUE;
 extern QueueHandle_t keypadQueue;
 extern EventGroupHandle_t keypadEventGroup;
 
-static CThread *voiceThread, *mp3Thread, *neopixelThread, *buttonThread, *clockThread;
+static CThread *voiceThread, *mp3Thread, *neopixelThread, *buttonThread, *displayThread;
 
 static void toggleVoiceThread(void* param) {
   while (true) {
@@ -43,25 +45,41 @@ static void memoryWatchdog(void* param) {
     mp3Thread->memoryFree(mp3Thread);
     neopixelThread->memoryFree(neopixelThread);
     buttonThread->memoryFree(buttonThread);
-    clockThread->memoryFree(clockThread);
+    displayThread->memoryFree(displayThread);
     Serial.println("=======================================");     
   }
 }
-
+static void syncSystemState(void* param){
+  while(true){
+      esp8266React.getWiFiSettingsService()->read([&](WiFiSettings& wifiSettings) {    
+        SystemState.set_ssid(wifiSettings.ssid.c_str());                
+      });        
+      
+      SystemState.set_sntp_sync_status(sntp_get_sync_status());      
+      vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+static void gotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
+  SystemState.set_ip(WiFi.localIP().toString().c_str());
+}
 void AlarmService::begin() {
-  Serial.printf_P(PSTR("Begin()\n"));
+  Serial.printf_P(PSTR("Starting Alarm Service...\n"));
   _fsPersistence.readFromFS();
 
   voiceThread = VoiceThread.initialize(3);
   mp3Thread = Mp3Thread.initialize(0);
   neopixelThread = NeopixelThread.initialize(3);
   buttonThread = ButtonThread.initialize(0);
-  clockThread = ClockThread.initialize(0);
+  displayThread = DisplayThread.initialize(0);
+  WiFi.onEvent(gotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
+
   
 
   xTaskCreate(toggleVoiceThread, "toggleVoiceThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
   xTaskCreate(toggleMp3Thread, "toggleMp3Thread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
-  xTaskCreate(memoryWatchdog, "memoryWatchdog", 2048, NULL, (tskIDLE_PRIORITY + 1), NULL);
+  xTaskCreate(syncSystemState, "syncSystemState", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
+  // xTaskCreate(memoryWatchdog, "memoryWatchdog", 2048, NULL, (tskIDLE_PRIORITY + 1), NULL);
+  Serial.printf_P(PSTR("Alarm Service Started!\n"));
 }
 
 void AlarmService::loop() {

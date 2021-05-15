@@ -1,26 +1,29 @@
-#include "ClockThread.h"
+#include "ClockView.h"
 
-static CThread thread;
+static View view;
+
 const int clock_radius = 43; //global adjustment for the clock, default 90
 const int clock_xoffset = 88;  //global adjustment for the clock, default 120
 const int clock_yoffset = 65; //global adjustment for the clock, default 195
 int point_xpos = 0;
 int point_ypos = 0;
-int sec_arrow_xpos = clock_xoffset;
-int sec_arrow_ypos = clock_yoffset - clock_radius;
-int min_arrow_xpos = clock_xoffset;
-int min_arrow_ypos = clock_yoffset - clock_radius;
-int hour_arrow_xpos = clock_xoffset;
-int hour_arrow_ypos = clock_yoffset - clock_radius;
+int sec_arrow_xpos = 0;
+int sec_arrow_ypos  = 0;
+int min_arrow_xpos  = 0;
+int min_arrow_ypos  = 0;
+int hour_arrow_xpos = 0;
+int hour_arrow_ypos = 0;
 
-int copy_sec_arrow_xpos;
-int copy_sec_arrow_ypos;
-int copy_min_arrow_xpos;
-int copy_min_arrow_ypos;
-int copy_hour_arrow_xpos;
-int copy_hour_arrow_ypos;
+int copy_sec_arrow_xpos  = 0;
+int copy_sec_arrow_ypos  = 0;
+int copy_min_arrow_xpos  = 0;
+int copy_min_arrow_ypos  = 0;
+int copy_hour_arrow_xpos  = 0;
+int copy_hour_arrow_ypos  = 0;
 float alfa;
 
+// static font_t DejaVuSans10, DejaVuSans12, DejaVuSans12Bold, DejaVuSans16, DejaVuSans20, DejaVuSans24, DejaVuSans32, Fixed_5x8, Fixed_7x14;
+// static coord_t DisplayWidth, DisplayHeight, DisplayWidthMidpoint, DisplayHeightMidpoint;
 static void draw_hour(char* hour_string, int x, int y)
 {
 	coord_t width = gdispGetWidth();
@@ -117,22 +120,11 @@ void face() {
 	}
 	gdispDrawCircle(clock_xoffset-1, clock_yoffset-1, clock_radius+20, White);
 }
-
-static void run(void* params) {
-  Serial.printf_P(PSTR("ClockThread running...\n"));
-
-  // Infinite loop to run main bulk of task
-  while (1) {
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    gdispGSetBacklight(gdispGetDisplay(0), 100);
-	gdispGSetOrientation(gdispGetDisplay(0), GDISP_ROTATE_270);
-    gdispClear(Black);
-
+static void render()
+{
     coord_t width = gdispGetWidth();
     coord_t height = gdispGetHeight();
-
-    time_t currentTimestamp = time(nullptr);
+    time_t currentTimestamp = time(NULL);
     struct tm nowTs = *localtime(&currentTimestamp);
     char hours[3], minutes[3], seconds[3], ampm[3];
     int hoursNum, minutesNum, secondsNum;
@@ -147,7 +139,7 @@ static void run(void* params) {
 
     strftime(ampm, 3, "%p", &nowTs);
 
-    
+    gdispClear(Black);
     draw_clock(hoursNum, minutesNum, secondsNum);
     face();
 
@@ -159,29 +151,46 @@ static void run(void* params) {
     int time_height = gdispGetFontMetric(DejaVuSans32, fontHeight) + 1;
 
     gdispDrawStringBox((width / 2) - (time_width / 2) + 8,
-                       height - time_height + 5,
-                       time_width,
-                       time_height,
-                       time_string,
-                       DejaVuSans32,
-                       White,
-                       justifyCenter);
+                    height - time_height + 5,
+                    time_width,
+                    time_height,
+                    time_string,
+                    DejaVuSans32,
+                    White,
+                    justifyCenter);
     gdispGFlush(gdispGetDisplay(0));
-
-    if (false) {
-      break;
-    }
-  }
-
-  // Out side of loop now. Task needs to clean up and self terminate before returning
-  vTaskDelete(NULL);
 }
 
-static CThread* initialize(u8 priority) {
-  gfxInit();
-  thread.run = run;
-  return CThread_super(&thread, 2048, "clockThread", (tskIDLE_PRIORITY+priority));
+static View* init()
+{
+	view.render = render;
+
+    sec_arrow_xpos = clock_xoffset;
+    sec_arrow_ypos = clock_yoffset - clock_radius;
+    min_arrow_xpos = clock_xoffset;
+    min_arrow_ypos = clock_yoffset - clock_radius;
+    hour_arrow_xpos = clock_xoffset;
+    hour_arrow_ypos = clock_yoffset - clock_radius;
+
+	// DejaVuSans10 =  gdispOpenFont("DejaVuSans10");
+	// DejaVuSans12 =  gdispOpenFont("DejaVuSans12");
+	// DejaVuSans12Bold =  gdispOpenFont("DejaVuSansBold12");
+	// DejaVuSans16 =  gdispOpenFont("DejaVuSans16");
+
+	// DejaVuSans20 = gdispOpenFont("DejaVuSans20");
+	// DejaVuSans24 = gdispOpenFont("DejaVuSans24");
+	
+	// DejaVuSans32 = gdispOpenFont("DejaVuSans32");
+	// Fixed_5x8 = gdispOpenFont("fixed_5x8");
+	// Fixed_7x14 = gdispOpenFont("fixed_7x14");
+
+	// DisplayWidth = gdispGetWidth();
+	// DisplayWidthMidpoint = DisplayWidth / 2;
+	// DisplayHeight = gdispGetHeight();
+	// DisplayHeightMidpoint = DisplayHeight / 2;
+	
+	return &view;
 }
-const struct clockThread ClockThread = {
-    .initialize = initialize,
+const struct clockview ClockView = { 
+	.init = init,
 };

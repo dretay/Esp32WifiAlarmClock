@@ -20,23 +20,22 @@ static void colorWipe(uint32_t color, int wait) {
 }
 
 static void run(void* params) {
-  for (;;) {
+  strip.show();             // Turn OFF all pixels ASAP
+  strip.setBrightness(5);  // Set BRIGHTNESS to about 1/5 (max = 255)
+  while(true)
+  {
     colorWipe(strip.Color(255, 0, 0), 50);     // Red
     colorWipe(strip.Color(0, 255, 0), 50);     // Green
     colorWipe(strip.Color(0, 0, 255), 50);     // Blue
     colorWipe(strip.Color(0, 0, 0, 255), 50);  // True white (not RGB white)
-    
   }
   vTaskDelete(NULL);
 }
 
 static CThread* initialize(u8 priority) {  
   strip.begin();            // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();             // Turn OFF all pixels ASAP
-  strip.setBrightness(10);  // Set BRIGHTNESS to about 1/5 (max = 255)
-
   thread.run = run;
-  return CThread_super(&thread, configMINIMAL_STACK_SIZE, "neopixelThread", (tskIDLE_PRIORITY+priority));
+  return CThread_super(&thread, 2048, "neopixelThread", (tskIDLE_PRIORITY+priority));
 }
 const struct neopixelThread NeopixelThread = {
     .initialize = initialize,
