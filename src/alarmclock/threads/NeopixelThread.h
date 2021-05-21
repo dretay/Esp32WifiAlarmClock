@@ -6,9 +6,13 @@
 
 #include <Adafruit_NeoPixel.h>
 
-struct neopixelThread
-{
-	CThread*(*initialize)(u8 priority);	
+struct NeopixelCommand {
+  enum { NOOP, BRIGHTNESS, ENABLED, COLOR } command;
+  int value;
+};
+
+struct neopixelThread {
+  CThread* (*initialize)(u8 priority);
 };
 
 extern const struct neopixelThread NeopixelThread;

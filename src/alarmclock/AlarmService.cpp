@@ -19,7 +19,7 @@ extern QueueHandle_t MP3_QUEUE;
 extern QueueHandle_t keypadQueue;
 extern EventGroupHandle_t keypadEventGroup;
 
-static CThread *voiceThread, *mp3Thread, *neopixelThread, *buttonThread, *displayThread;
+static CThread *voiceThread, *mp3Thread, *buttonThread, *displayThread;
 
 static void toggleVoiceThread(void* param) {
   while (true) {
@@ -43,20 +43,19 @@ static void memoryWatchdog(void* param) {
     Serial.println("=============Memory Report=============");
     voiceThread->memoryFree(voiceThread);
     mp3Thread->memoryFree(mp3Thread);
-    neopixelThread->memoryFree(neopixelThread);
+    // neopixelThread->memoryFree(neopixelThread);
     buttonThread->memoryFree(buttonThread);
     displayThread->memoryFree(displayThread);
-    Serial.println("=======================================");     
+    Serial.println("=======================================");
   }
 }
-static void syncSystemState(void* param){
-  while(true){
-      esp8266React.getWiFiSettingsService()->read([&](WiFiSettings& wifiSettings) {    
-        SystemState.set_ssid(wifiSettings.ssid.c_str());                
-      });        
-      
-      SystemState.set_sntp_sync_status(sntp_get_sync_status());      
-      vTaskDelay(pdMS_TO_TICKS(1000));
+static void syncSystemState(void* param) {
+  while (true) {
+    esp8266React.getWiFiSettingsService()->read(
+        [&](WiFiSettings& wifiSettings) { SystemState.set_ssid(wifiSettings.ssid.c_str()); });
+
+    SystemState.set_sntp_sync_status(sntp_get_sync_status());
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 static void gotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -68,12 +67,10 @@ void AlarmService::begin() {
 
   voiceThread = VoiceThread.initialize(3);
   mp3Thread = Mp3Thread.initialize(0);
-  neopixelThread = NeopixelThread.initialize(3);
+
   buttonThread = ButtonThread.initialize(0);
   displayThread = DisplayThread.initialize(0);
   WiFi.onEvent(gotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
-
-  
 
   xTaskCreate(toggleVoiceThread, "toggleVoiceThread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);
   xTaskCreate(toggleMp3Thread, "toggleMp3Thread", configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1), NULL);

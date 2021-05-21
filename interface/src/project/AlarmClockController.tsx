@@ -60,16 +60,16 @@ function AlarmStateRestControllerForm(props: AlarmStateRestControllerFormProps) 
   let formatDate = (date: number): string => {
     let parsedDate = new Date();
     let formattedDate = dateFns.format(parsedDate, "hh:mm aa");
-    
-    if(_.isNumber(date)){
-      parsedDate = new Date(date*1000);
+
+    if (_.isNumber(date)) {
+      parsedDate = new Date(date * 1000);
       formattedDate = dateFns.format(parsedDate, "hh:mm aa");
-    }    
+    }
     return formattedDate;
   }
-  const handleRowUpdate = (newData:any, oldData:any, resolve:any) => {
+  const handleRowUpdate = (newData: any, oldData: any, resolve: any) => {
     console.log("STARTING UPDATE!!!!!");
-    setData({"entries":[newData]}, () => {
+    setData({ "entries": [newData] }, () => {
       saveData();
     });
   }
@@ -132,7 +132,7 @@ function AlarmStateRestControllerForm(props: AlarmStateRestControllerFormProps) 
           }),
         onRowUpdate: (newTableData, oldTableData) =>
           new Promise((resolve, reject) => {
-            handleRowUpdate(newTableData, oldTableData, resolve);            
+            handleRowUpdate(newTableData, oldTableData, resolve);
           }),
         onRowDelete: oldTableData =>
           new Promise((resolve, reject) => {

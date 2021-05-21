@@ -10,23 +10,19 @@
 
 #include <Arduino.h>
 #ifdef ESP32
-    #include <WiFi.h>
+#include <WiFi.h>
 #else
-    #include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #endif
-
 
 #include "threads/CThread.h"
 #include "threads/ButtonThread.h"
 #include "threads/Mp3Thread.h"
-#include "threads/NeopixelThread.h"
 #include "threads/VoiceThread.h"
 #include "threads/DisplayThread.h"
 #include "SystemState.h"
 
-
 #include "AnalogMux.h"
-
 
 #define ALARM_SETTINGS_FILE "/config/alarmSettings.json"
 #define ALARM_SETTINGS_PATH "/rest/alarmState"
@@ -51,8 +47,6 @@ class AlarmSettings {
     entry["time"] = settings.entries[0].time;
     entry["daysOfWeek"] = settings.entries[0].daysOfWeek;
     entry["enabled"] = settings.entries[0].enabled;
-
-   
   }
 
   // take the data out of root and put it into settings
