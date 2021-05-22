@@ -32,7 +32,7 @@ class AlarmStateRestController extends Component<AlarmStateRestControllerProps> 
 
   render() {
     return (
-      <SectionContent title='My REST Controller' titleGutter>
+      <SectionContent title='Alarms' titleGutter>
         <RestFormLoader
           {...this.props}
           render={props => (
@@ -76,7 +76,11 @@ function AlarmStateRestControllerForm(props: AlarmStateRestControllerFormProps) 
 
   return (
     <MaterialTable
-      title="Editable Preview"
+      options={{
+        search: false,
+        showTitle: false
+      }}
+
       columns={[
         {
           title: 'Song', field: 'song',

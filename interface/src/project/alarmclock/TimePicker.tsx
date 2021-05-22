@@ -48,6 +48,7 @@ export default function TimePicker({
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils} >
       <KeyboardTimePicker
+        style={{ width: "100%" }}
         className={classes.root}
         margin="dense"
         id="time-picker"

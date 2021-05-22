@@ -58,7 +58,7 @@ static CThread* initialize(u8 priority) {
   if (NEOPIXEL_QUEUE == NULL) {
     Serial.printf_P(PSTR("Error creating the queue"));
   }
-  return CThread_super(&thread, 4048, "neopixelThread", (tskIDLE_PRIORITY + priority));
+  return CThread_super(&thread, 2048, "neopixelThread", (tskIDLE_PRIORITY + priority));
 }
 const struct neopixelThread NeopixelThread = {
     .initialize = initialize,

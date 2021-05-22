@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { ValidatorForm } from 'react-material-ui-form-validator';
+import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
 import TimePicker from './alarmclock/TimePicker'
 import ColorPicker from 'material-ui-color-picker';
 import Slider from '@material-ui/core/Slider';
@@ -22,11 +24,17 @@ const dateFns = new DateFnsAdapter();
 
 type LightStateWebSocketControllerProps = WebSocketControllerProps<NightlightState>;
 
+const useStyles = makeStyles((theme) => ({
+  rightAligned: {
+    textAlign: 'right',
+  },
+}));
+
 class LightStateWebSocketController extends Component<LightStateWebSocketControllerProps> {
 
   render() {
     return (
-      <SectionContent title='WebSocket Controller' titleGutter>
+      <SectionContent title='Nightlight' titleGutter>
         <WebSocketFormLoader
           {...this.props}
           render={props => (
@@ -89,55 +97,77 @@ function LightStateWebSocketControllerForm(props: LightStateWebSocketControllerF
     }
   ]
 
+  const classes = useStyles();
+
+
+
   return (
     <ValidatorForm onSubmit={saveData}>
-      <Box bgcolor="primary.main" color="primary.contrastText" p={2} mt={2} mb={2}>
-        <Typography variant="body1">
-          The switch below controls the LED via the WebSocket. It will automatically update whenever the LED state changes.
-        </Typography>
-      </Box>
-
-      <Slider
-        value={data.status}
-        min={0}
-        max={2}
-        step={1}
-        marks={marks}
-        onChange={changeStatus}
-        aria-labelledby="discrete-slider-custom"
-      />
-      <ColorPicker
-        name='color'
-        defaultValue={"Nightlight Color"}
-        value={`#${Number(data.color).toString(16)}`}
-        onChange={changeLedColor}
-      />
-      <Grid container spacing={2}>
-        <Grid item>
-          <BrightnessLow />
-        </Grid>
-        <Grid item xs>
+      <Grid container spacing={3} >
+        <Grid item xs={3}><Typography className={classes.rightAligned} variant="h6">Mode</Typography></Grid>
+        <Grid item xs={6} >
           <Slider
-            value={data.brightness}
+            value={data.status}
             min={0}
-            max={255}
+            max={2}
             step={1}
-            onChange={changeBrightness}
-            aria-labelledby="continuous-slider"
+            marks={marks}
+            onChange={changeStatus}
+            aria-labelledby="discrete-slider-custom"
           />
         </Grid>
-        <Grid item>
-          <BrightnessHigh />
+        <Grid item xs={3}></Grid>
+
+        <Grid item xs={3}><Typography className={classes.rightAligned} variant="h6">Color</Typography></Grid>
+        <Grid item xs={6}>
+          <ColorPicker
+            name='color'
+            defaultValue={"Nightlight Color"}
+            value={`#${Number(data.color).toString(16)}`}
+            onChange={changeLedColor}
+            style={{ width: "100%" }}
+          />
         </Grid>
+        <Grid item xs={3}></Grid>
+        <Grid item xs={3}><Typography className={classes.rightAligned} variant="h6">Brightness</Typography></Grid>
+        <Grid item xs={6}>
+          <Grid container spacing={2}>
+            <Grid item>
+              <BrightnessLow />
+            </Grid>
+            <Grid item xs>
+              <Slider
+                value={data.brightness}
+                min={0}
+                max={255}
+                step={1}
+                onChange={changeBrightness}
+                aria-labelledby="continuous-slider"
+              />
+            </Grid>
+            <Grid item>
+              <BrightnessHigh />
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={3}></Grid>
+        <Grid item xs={3}><Typography className={classes.rightAligned} variant="h6">Start Time</Typography></Grid>
+        <Grid item xs={6}>
+          <TimePicker
+            onChange={changeStart}
+            value={data.start}
+          />
+        </Grid>
+        <Grid item xs={3}></Grid>
+        <Grid item xs={3}><Typography className={classes.rightAligned} variant="h6">End Time</Typography></Grid>
+        <Grid item xs={6}>
+          <TimePicker
+            onChange={changeStop}
+            value={data.stop}
+          />
+        </Grid>
+        <Grid item xs={3}></Grid>
       </Grid>
-      <TimePicker
-        onChange={changeStart}
-        value={data.start}
-      />
-      <TimePicker
-        onChange={changeStop}
-        value={data.stop}
-      />
     </ValidatorForm>
   );
 }
