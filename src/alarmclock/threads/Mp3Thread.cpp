@@ -2,7 +2,7 @@
 
 using namespace std;
 
-QueueHandle_t MP3_QUEUE;
+// QueueHandle_t MP3_QUEUE;
 DFPlayerMini_Fast myMP3;
 extern HardwareSerial dfplayerUart;
 static CThread thread;
@@ -12,7 +12,7 @@ static void run(void* params) {
   Serial.printf_P(PSTR("Mp3Thread running...\n"));
 
   for (;;) {
-    xQueueReceive(MP3_QUEUE, &command, portMAX_DELAY);
+    xQueueReceive(thread.cmdMsgQueue, &command, portMAX_DELAY);
     int S0 = 14;
     int S1 = 27;
     switch (command) {
@@ -44,14 +44,14 @@ static CThread* initialize(u8 priority) {
   myMP3.begin(dfplayerUart);
   myMP3.volume(30);
 
-  MP3_QUEUE = xQueueCreate(1, sizeof(int));
-  if (MP3_QUEUE == NULL) {
-    Serial.printf_P(PSTR("Error creating the queue"));
-  }
+  // MP3_QUEUE = xQueueCreate(1, sizeof(int));
+  // if (MP3_QUEUE == NULL) {
+  //   Serial.printf_P(PSTR("Error creating the queue"));
+  // }
 
   AnalogMux.initialize();
   thread.run = run;
-  return CThread_super(&thread, 2048, "mp3Thread", (tskIDLE_PRIORITY+priority));
+  return CThread_super(&thread, 2048, "mp3Thread", (tskIDLE_PRIORITY + priority), sizeof(int));
 }
 const struct mp3Thread Mp3Thread = {
     .initialize = initialize,

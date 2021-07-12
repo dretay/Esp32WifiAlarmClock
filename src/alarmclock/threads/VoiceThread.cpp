@@ -2,7 +2,7 @@
 
 using namespace std;
 
-QueueHandle_t VOICE_QUEUE;
+// QueueHandle_t VOICE_QUEUE;
 AudioOutputI2S* out;
 static CThread thread;
 
@@ -196,7 +196,7 @@ static void run(void* params) {
   char nowTsAmPm[3];
   // char timeBuffer[8];
   for (;;) {
-    xQueueReceive(VOICE_QUEUE, &command, portMAX_DELAY);
+    xQueueReceive(thread.cmdMsgQueue, &command, portMAX_DELAY);
     switch (command) {
       case 0: {
         time_t currentTimestamp = time(nullptr);
@@ -244,16 +244,16 @@ static void run(void* params) {
   vTaskDelete(NULL);
 }
 
-static CThread* initialize(u8 priority) {  
+static CThread* initialize(u8 priority) {
   // start threads
-  VOICE_QUEUE = xQueueCreate(1, sizeof(int));
-  if (VOICE_QUEUE == NULL) {
-    Serial.printf_P(PSTR("Error creating the queue"));
-  }
+  // VOICE_QUEUE = xQueueCreate(1, sizeof(int));
+  // if (VOICE_QUEUE == NULL) {
+  //   Serial.printf_P(PSTR("Error creating the queue"));
+  // }
   AnalogMux.initialize();
 
   thread.run = run;
-  return CThread_super(&thread, 2048, "voiceThread", (tskIDLE_PRIORITY+priority));
+  return CThread_super(&thread, 2048, "voiceThread", (tskIDLE_PRIORITY + priority), sizeof(int));
 }
 const struct voiceThread VoiceThread = {
     .initialize = initialize,

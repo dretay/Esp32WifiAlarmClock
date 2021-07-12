@@ -43,7 +43,7 @@ void setup() {
   nightlightService.begin();
 
   // start the light service
-  //lightMqttSettingsService.begin();
+  // lightMqttSettingsService.begin();
 
   // start the server
   server.begin();
@@ -54,5 +54,6 @@ void setup() {
 void loop() {
   // run the framework's loop function
   esp8266React.loop();
+  nightlightService.loop();
   // alarmService.loop();
 }

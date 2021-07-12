@@ -94,7 +94,7 @@ static CThread* initialize(u8 priority) {
   keypadQueue = xQueueCreate(1, sizeof(uint32_t));
 
   thread.run = run;
-  return CThread_super(&thread, 2048, "buttonThread", (tskIDLE_PRIORITY+priority));
+  return CThread_super(&thread, 2048, "buttonThread", (tskIDLE_PRIORITY + priority), 0);
 }
 const struct buttonThread ButtonThread = {
     .initialize = initialize,

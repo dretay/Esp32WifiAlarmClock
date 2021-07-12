@@ -9,7 +9,6 @@
 			"gdisp_driver.h": "c",
 			"string": "cpp",
 			"functional": "cpp"
-		},
-		"workbench.colorTheme": "Default Light+"
+    }
 	}
 }

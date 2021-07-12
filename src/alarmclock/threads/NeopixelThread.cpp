@@ -6,47 +6,65 @@ using namespace std;
 #define LED_PIN 32
 #define LED_COUNT 12
 // #define DEFAULTBRIGHTNESS 50
-QueueHandle_t NEOPIXEL_QUEUE;
+// QueueHandle_t NEOPIXEL_QUEUE;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
 
 static CThread thread;
+u32 stripBrightness = 0, stripColor = 0;
+enum NEOPIXELSTATUS { OFF, ON } neoPixelStatus;
 
-static void colorWipe(uint32_t color, int wait) {
-  for (int i = 0; i < strip.numPixels(); i++) {  // For each pixel in strip...
-    strip.setPixelColor(i, color);               //  Set pixel's color (in RAM)
-    strip.show();                                //  Update strip to match
-    delay(wait);                                 //  Pause for a moment
+static void colorWipe() {
+  // if (neoPixelStatus == ON) {
+  strip.setBrightness(stripBrightness);
+  for (int i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, stripColor);
+    strip.show();
+    delay(100);
   }
+  // }
+}
+static void colorImmediate() {
+  // if (neoPixelStatus == ON) {
+  strip.setBrightness(stripBrightness);
+  for (int i = 0; i < strip.numPixels(); i++) {
+    strip.setPixelColor(i, stripColor);
+  }
+  strip.show();
+  // }
 }
 
 static void run(void* params) {
-  bool first = true;
-  struct NeopixelCommand command = {.command = NeopixelCommand::NOOP, .value = 0};
-  strip.show();
-  strip.setBrightness(5);  // TODO: this should be pulled from _state in contructor
+  struct NeopixelCommand command;  // = {.command = NeopixelCommand::NOOP, .value = 0};
+
   while (true) {
-    xQueueReceive(NEOPIXEL_QUEUE, &command, 0);
-    switch (command.command) {
-      case NeopixelCommand::COLOR:
-        colorWipe(command.value, 50);
-        break;
-      case NeopixelCommand::ENABLED:
-
-        break;
-
-      case NeopixelCommand::BRIGHTNESS:
-        strip.setBrightness(command.value);
-        strip.show();
-        command.command = NeopixelCommand::NOOP;
+    xQueueReceive(thread.cmdMsgQueue, &command, portMAX_DELAY);
+    if (uxQueueMessagesWaiting(thread.cmdMsgQueue) > 0) {
+      xQueueReceive(thread.cmdMsgQueue, &command, portMAX_DELAY);
     }
-    if (first) {
-      colorWipe(strip.Color(255, 0, 0), 50);  // Red
-      first = false;
-    }
-    // colorWipe(strip.Color(0, 255, 0), 50);     // Green
-    // colorWipe(strip.Color(0, 0, 255), 50);     // Blue
-    // colorWipe(strip.Color(0, 0, 0, 255), 50);  // True white (not RGB white)
+    Serial.printf_P(PSTR("Processing neopixel message\n"));
+    stripColor = command.color;
+    stripBrightness = command.brightness;
+    colorWipe();
+    // switch (command.command) {
+    //   case NeopixelCommand::COLOR:
+    //     stripColor = command.value;
+    //     colorWipe();
+    //     break;
+
+    //   case NeopixelCommand::STATUS:
+    //     neoPixelStatus = (NEOPIXELSTATUS)command.value;
+    //     colorImmediate();
+    //     break;
+
+    //   case NeopixelCommand::BRIGHTNESS:
+    //     stripBrightness = command.value;
+    //     colorImmediate();
+
+    //   case NeopixelCommand::NOOP:
+    //     break;
+    // }
+    // command.command = NeopixelCommand::NOOP;
   }
   vTaskDelete(NULL);
 }
@@ -54,11 +72,11 @@ static void run(void* params) {
 static CThread* initialize(u8 priority) {
   strip.begin();  // INITIALIZE NeoPixel strip object (REQUIRED)
   thread.run = run;
-  NEOPIXEL_QUEUE = xQueueCreate(10, sizeof(NeopixelCommand));
-  if (NEOPIXEL_QUEUE == NULL) {
-    Serial.printf_P(PSTR("Error creating the queue"));
-  }
-  return CThread_super(&thread, 2048, "neopixelThread", (tskIDLE_PRIORITY + priority));
+  // NEOPIXEL_QUEUE = xQueueCreate(10, sizeof(NeopixelCommand));
+  // if (NEOPIXEL_QUEUE == NULL) {
+  //   Serial.printf_P(PSTR("Error creating the queue"));
+  // }
+  return CThread_super(&thread, 2048, "neopixelThread", (tskIDLE_PRIORITY + priority), sizeof(NeopixelCommand));
 }
 const struct neopixelThread NeopixelThread = {
     .initialize = initialize,

@@ -11,6 +11,11 @@
 #define NIGHTLIGHT_SETTINGS_SOCKET_PATH "/ws/nightlightState"
 #define NIGHTLIGHT_SETTINGS_FILE "/config/nightlightSettings.json"
 
+struct Time {
+  int hours;
+  int minutes;
+};
+
 class NightlightState {
  public:
   u32 status;
@@ -27,40 +32,46 @@ class NightlightState {
     root["stop"] = settings.stop;
   }
   static StateUpdateResult update(JsonObject& root, NightlightState& nightlightState) {
-    extern QueueHandle_t NEOPIXEL_QUEUE;
+    // extern QueueHandle_t NEOPIXEL_QUEUE;
     int newStatus = root["status"];
     int newColor = root["color"];
     int newBrightness = root["brightness"];
     time_t newStart = root["start"];
     time_t newStop = root["stop"];
     boolean stateChanged = false;
+    // Serial.printf_P(PSTR("Neopixel update: color - %d brightness - %d\n"), newColor, newBrightness);
 
     if (nightlightState.status != newStatus) {
       stateChanged = true;
       nightlightState.status = root["status"];
-      // struct NeopixelCommand command = {
-      //     .command = NeopixelCommand::ENABLED,
-      //     .value = newEnabled,
-      // };
-      // xQueueSend(NEOPIXEL_QUEUE, &command, portMAX_DELAY);
+      if (nightlightState.status == 2) {  // todo: if in "test" then should always be on, otherwise "off" or noop?
+        // struct NeopixelCommand command = {
+        //     .command = NeopixelCommand::STATUS,
+        //     .value = 1,
+        // };
+        // xQueueSend(NEOPIXEL_QUEUE, &command, portMAX_DELAY);
+      }
     }
     if (nightlightState.color != newColor) {
       stateChanged = true;
       nightlightState.color = root["color"];
-      struct NeopixelCommand command = {
-          .command = NeopixelCommand::COLOR,
-          .value = newColor,
-      };
-      xQueueSend(NEOPIXEL_QUEUE, &command, portMAX_DELAY);
+      // Serial.printf_P(PSTR("Neopixel color changed\n"));
+      // struct NeopixelCommand command = {
+      //     .command = NeopixelCommand::COLOR,
+      //     .value = newColor,
+      // };
+      // xQueueSend(NEOPIXEL_QUEUE, &command, portMAX_DELAY);
     }
     if (nightlightState.brightness != newBrightness) {
       stateChanged = true;
       nightlightState.brightness = root["brightness"];
-      struct NeopixelCommand command = {
-          .command = NeopixelCommand::BRIGHTNESS,
-          .value = newBrightness,
-      };
-      xQueueSend(NEOPIXEL_QUEUE, &command, portMAX_DELAY);
+      // Serial.printf_P(PSTR("Neopixel brightness changed\n"));
+
+      // struct NeopixelCommand command = {
+      //     .command = NeopixelCommand::BRIGHTNESS,
+      //     .value = newBrightness,
+      // };
+      // xQueueSend(NEOPIXEL_QUEUE, &command, portMAX_DELAY);
     }
     if (nightlightState.start != newStart) {
       stateChanged = true;
@@ -71,9 +82,10 @@ class NightlightState {
       nightlightState.stop = root["stop"];
     }
     if (stateChanged) {
+      // Serial.printf_P(PSTR("Neopixel state changed\n"));
       return StateUpdateResult::CHANGED;
     }
-
+    // Serial.printf_P(PSTR("Neopixel state unchanged\n"));
     return StateUpdateResult::UNCHANGED;
   }
 };

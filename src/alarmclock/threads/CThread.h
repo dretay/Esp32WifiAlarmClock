@@ -5,15 +5,15 @@
 typedef struct CThread {
   // void(*stop)(void) //TODO: implement me!
   void (*run)(void* params);
-  float (*memoryFree)(CThread*); 
+  float (*memoryFree)(CThread*);
   TaskHandle_t thread;
   uint32_t stack_allotment;
   char taskName[configMAX_TASK_NAME_LEN];
+  QueueHandle_t cmdMsgQueue;
 
 } CThread;
 
 static float CThread_memoryFree(CThread* thread) {
-  
   UBaseType_t uxHighWaterMark;
   uint32_t diff;
   float result;
@@ -25,16 +25,22 @@ static float CThread_memoryFree(CThread* thread) {
   result = ((float)diff / (float)thread->stack_allotment) * 100.0;
 
   Serial.printf_P(PSTR("%s max usage: %.0f%%\n"), thread->taskName, result);
-  
 }
 
-static CThread* CThread_super(CThread* child, uint32_t stack_allotment, char* taskName, UBaseType_t priority) {
+static CThread* CThread_super(CThread* child,
+                              uint32_t stack_allotment,
+                              char* taskName,
+                              UBaseType_t priority,
+                              UBaseType_t queueItemSize) {
   child->memoryFree = CThread_memoryFree;
   child->stack_allotment = stack_allotment;
-  strncpy(child->taskName, taskName,configMAX_TASK_NAME_LEN);
+  strncpy(child->taskName, taskName, configMAX_TASK_NAME_LEN);
 
   Serial.printf_P(PSTR("Starting %s...\n"), taskName);
   xTaskCreate(child->run, taskName, stack_allotment, NULL, priority, &child->thread);
+  if (queueItemSize != 0) {
+    child->cmdMsgQueue = xQueueCreate(5, queueItemSize);
+  }
 
   return child;
 }

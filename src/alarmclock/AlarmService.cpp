@@ -14,8 +14,8 @@ AlarmService::AlarmService(AsyncWebServer* server, FS* fs, SecurityManager* secu
   alarmTriggered = false;
 }
 
-extern QueueHandle_t VOICE_QUEUE;
-extern QueueHandle_t MP3_QUEUE;
+// extern QueueHandle_t VOICE_QUEUE;
+// extern QueueHandle_t MP3_QUEUE;
 extern QueueHandle_t keypadQueue;
 extern EventGroupHandle_t keypadEventGroup;
 
@@ -23,17 +23,21 @@ static CThread *voiceThread, *mp3Thread, *buttonThread, *displayThread;
 
 static void toggleVoiceThread(void* param) {
   while (true) {
-    xEventGroupWaitBits(keypadEventGroup, KEY00, pdTRUE, pdTRUE, portMAX_DELAY);
+    // speak, makes sense to wait forever
+    xEventGroupWaitBits(keypadEventGroup, KEY_OFF, pdTRUE, pdTRUE, portMAX_DELAY);
 
     int command = 0;
-    xQueueSend(VOICE_QUEUE, &command, portMAX_DELAY);
+    // xQueueSend(VOICE_QUEUE, &command, portMAX_DELAY);
+    xQueueSend(voiceThread->cmdMsgQueue, &command, portMAX_DELAY);
   }
 }
 static int mp3_command = 0;
 static void toggleMp3Thread(void* param) {
   while (true) {
-    xEventGroupWaitBits(keypadEventGroup, KEY01, pdTRUE, pdTRUE, portMAX_DELAY);
-    xQueueSend(MP3_QUEUE, &mp3_command, portMAX_DELAY);
+    xEventGroupWaitBits(keypadEventGroup, KEY_REVIEW, pdTRUE, pdTRUE, portMAX_DELAY);
+    // xQueueSend(MP3_QUEUE, &mp3_command, portMAX_DELAY);
+    xQueueSend(mp3Thread->cmdMsgQueue, &mp3_command, portMAX_DELAY);
+
     mp3_command++;
   }
 }

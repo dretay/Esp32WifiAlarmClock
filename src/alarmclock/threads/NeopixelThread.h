@@ -7,8 +7,8 @@
 #include <Adafruit_NeoPixel.h>
 
 struct NeopixelCommand {
-  enum { NOOP, BRIGHTNESS, ENABLED, COLOR } command;
-  int value;
+  u32 color;
+  u32 brightness;
 };
 
 struct neopixelThread {
